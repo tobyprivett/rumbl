@@ -20,4 +20,20 @@ defmodule Rumbl.UserTest do
     assert{:username, {"should be at most %{count} character(s)", [count: 20]}} in
       errors_on(%User{}, attrs)
   end
+
+  test "registration changeset password muset be at least 6 chars" do
+    attrs = Map.put(@valid_attrs, :password, "12345")
+    changeset = User.registration_changeset(%User{}, attrs)
+    assert {:password, {"should be at least %{count} character(s)", [count: 6]}} in
+      changeset.errors
+  end
+
+  test "registration_changeset with valid attributes hashes password" do
+    changeset = User.registration_changeset(%User{}, @valid_attrs)
+    %{password: pass, password_hash: pass_hash} = changeset.changes
+
+    assert changeset.valid?
+    assert pass_hash
+    assert Comeonin.Bcrypt.checkpw(pass,pass_hash)
+  end
 end
